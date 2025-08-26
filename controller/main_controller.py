@@ -16,7 +16,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
-        "http://127.0.0.1:5173"
+        "http://127.0.0.1:5173",
+        "https://resmatch.netlify.app/"
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -24,7 +25,7 @@ app.add_middleware(
 )
 
 @app.post("/api/upload")
-async def upload_pdf(pdf: UploadFile = File(...), description: str = Form(...)):
+async def upload_pdf(pdf: UploadFile = File(...), description: str = Form(...), gemini_api_key: str = Form(...)):
     if pdf.content_type != "application/pdf":
         return JSONResponse(status_code=400, content={"error": "File must be a PDF."})
     print("debug", pdf.filename)
@@ -53,7 +54,7 @@ async def upload_pdf(pdf: UploadFile = File(...), description: str = Form(...)):
             }
         ]
     }
-    url = f"{GEMINI_API_URL}?key={GEMINI_API_KEY}"
+    url = f"{GEMINI_API_URL}?key={gemini_api_key}"
     async with httpx.AsyncClient(timeout=30.0) as client:
         response = await client.post(url, json=payload, headers=headers)
         resp_json = response.json()
